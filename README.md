@@ -1,16 +1,111 @@
-# React + Vite
+# 🎬 Bronime — Anime Streaming Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bronime adalah website **streaming anime (frontend only)** yang dibangun menggunakan **React.js (Vite)** dan **Tailwind CSS**, dengan data anime yang diambil secara real-time dari **Jikan API (MyAnimeList)**.
 
-Currently, two official plugins are available:
+Project ini berfokus pada **UI modern, bersih, responsif**, dan pengalaman pengguna ala platform streaming seperti Netflix (tanpa backend & tanpa autentikasi).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🚀 Demo & Preview
+> _(Tambahkan screenshot UI di sini jika sudah push ke GitHub)_  
+> Contoh:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## ✨ Fitur Utama
+
+- ✅ List Anime Populer (Top Anime)
+- 🔍 Search anime berdasarkan judul
+- 🏷️ Filter anime berdasarkan genre
+- 🎴 Card anime (poster, judul, rating)
+- 📄 Halaman detail anime
+- 🎥 Player video (UI only / placeholder)
+- ❤️ Favorites (localStorage)
+- ⬆️ Scroll to top + title dinamis
+- 📱 Responsive design (mobile – desktop)
+- ⏳ Loading & empty state handling
+
+---
+
+## 🛠️ Tech Stack
+
+- **React.js** (Vite)
+- **Tailwind CSS**
+- **React Router DOM**
+- **Jikan API** (MyAnimeList)
+- **Fetch API**
+- **LocalStorage**
+
+---
+
+## 🌐 API yang Digunakan
+
+- Top Anime  
+  `https://api.jikan.moe/v4/top/anime`
+
+- Search Anime  
+  `https://api.jikan.moe/v4/anime?q=naruto`
+
+- Genre Anime  
+  `https://api.jikan.moe/v4/genres/anime`
+
+> ⚠️ API gratis → memiliki limit request (429 Too Many Requests)
+
+---
+
+## 📁 Struktur Folder
+
+src/
+├── components/
+│ ├── AnimeCard.jsx
+│ ├── AnimeDetail.jsx
+│ ├── SearchBar.jsx
+│ ├── GenreFilter.jsx
+│ └── Navbar.jsx
+├── pages/
+│ ├── Home.jsx
+│ └── Favorites.jsx
+├── App.jsx
+├── main.jsx
+└── index.css
+
+
+---
+
+## ⚙️ Cara Menjalankan Project
+
+### 1️⃣ Clone Repository
+```bash
+git clone https://github.com/username/bronime.git
+cd bronime
+
+## install dependecies
+npm install
+
+##jalankan development server
+npm run dev
+
+
+- Catatan Penting
+
+Project ini frontend only
+
+Tidak ada backend & autentikasi
+
+Streaming video hanya UI (placeholder)
+
+Data sepenuhnya dari Jikan API
+
+Jika muncul error 429, tunggu beberapa saat sebelum reload
+
+- Tujuan Project
+
+Latihan membangun frontend modern dengan React
+
+Konsumsi public API (REST)
+
+Menerapkan UI/UX ala platform streaming
+
+Cocok untuk portfolio frontend developer
