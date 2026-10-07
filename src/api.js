@@ -1,4 +1,7 @@
 ﻿const API_BASE_URL = "https://jikan.lucashdo.com/v1"
+const CACHE_PREFIX = "bronime-api-cache:"
+const CACHE_TTL = 5 * 60 * 1000
+const MAX_RETRIES = 2
 
 function normalizeAnime(item) {
   if (!item || typeof item !== "object") return item
@@ -31,33 +34,71 @@ function normalizeAnime(item) {
   }
 }
 
-export async function fetchApi(path, options = {}) {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10000)
-
+function readCache(key) {
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      ...options,
-      signal: controller.signal,
-    })
-
-    if (!response.ok) {
-      throw new Error(`Jikan API error: ${response.status}`)
-    }
-
-    const result = await response.json()
-    return {
-      ...result,
-      data: Array.isArray(result.data)
-        ? result.data.map(normalizeAnime)
-        : normalizeAnime(result.data),
-    }
-  } catch (error) {
-    if (error.name === "AbortError") {
-      throw new Error("Request API timeout")
-    }
-    throw error
-  } finally {
-    clearTimeout(timeoutId)
+    const cached = JSON.parse(localStorage.getItem(key))
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) return cached.data
+  } catch {
+    localStorage.removeItem(key)
   }
+  return null
+}
+
+function writeCache(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ timestamp: Date.now(), data }))
+  } catch {
+    // Cache failure should never block the API request.
+  }
+}
+
+function canRetry(error) {
+  return error.name === "TypeError" || error.name === "AbortError" || error.status >= 500 || error.status === 429
+}
+
+export async function fetchApi(path, options = {}) {
+  const cacheKey = `${CACHE_PREFIX}${path}`
+  const useCache = (options.method || "GET").toUpperCase() === "GET"
+  const cached = useCache ? readCache(cacheKey) : null
+  if (cached) return cached
+
+  let lastError
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+    try {
+      const response = await fetch(`${API_BASE_URL}${path}`, {
+        ...options,
+        signal: controller.signal,
+      })
+
+      if (!response.ok) {
+        const error = new Error(`Jikan API error: ${response.status}`)
+        error.status = response.status
+        throw error
+      }
+
+      const result = await response.json()
+      const normalized = {
+        ...result,
+        data: Array.isArray(result.data)
+          ? result.data.map(normalizeAnime)
+          : normalizeAnime(result.data),
+      }
+      if (useCache) writeCache(cacheKey, normalized)
+      return normalized
+    } catch (error) {
+      lastError = error.name === "AbortError"
+        ? new Error("Request API timeout")
+        : error
+      if (!canRetry(error) || attempt === MAX_RETRIES) throw lastError
+      await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)))
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  }
+
+  throw lastError
 }
