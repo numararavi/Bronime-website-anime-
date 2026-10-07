@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 
 export default function AnimeCard({ anime, onClick }) {
-  const [fav, setFav] = useState(false)
-
-  useEffect(() => {
+  const [fav, setFav] = useState(() => {
     const stored = JSON.parse(localStorage.getItem("favorites")) || []
-    setFav(stored.includes(anime.mal_id))
-  }, [anime.mal_id])
+    return stored.includes(anime.mal_id)
+  })
 
   const toggleFav = e => {
     e.stopPropagation()

@@ -4,6 +4,7 @@ import AnimeCard from "../components/AnimeCard"
 import SearchBar from "../components/SearchBar"
 import GenreFilter from "../components/GenreFilter"
 import SkeletonCard from "../components/SkeletonCard"
+import { fetchApi } from "../api"
 
 export default function Home() {
   const [animeList, setAnimeList] = useState([])
@@ -12,6 +13,7 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(true)
   const [query, setQuery] = useState("")
   const [genre, setGenre] = useState("")
+  const [error, setError] = useState("")
 
   const loaderRef = useRef(null)
   const navigate = useNavigate()
@@ -51,23 +53,21 @@ export default function Home() {
 
   const fetchAnime = async () => {
     setLoading(true)
+    setError("")
     try {
-      let url = `https://api.jikan.moe/v4/top/anime?page=${page}`
+      let url = `/top/anime?page=${page}`
 
-      if (query) {
-        url = `https://api.jikan.moe/v4/anime?q=${query}&page=${page}`
+      if (query || genre) {
+        url = `/anime?q=${encodeURIComponent(query)}&page=${page}`
       }
-
-      const res = await fetch(url)
-      const data = await res.json()
-
-      let results = data.data || []
 
       if (genre) {
-        results = results.filter(anime =>
-          anime.genres.some(g => g.mal_id === Number(genre))
-        )
+        url += `${query ? "&" : "?"}genres=${genre}`
       }
+
+      const data = await fetchApi(url)
+
+      let results = data.data || []
 
       if (results.length === 0) {
         setHasMore(false)
@@ -76,6 +76,7 @@ export default function Home() {
       }
     } catch (err) {
       console.error("Gagal fetch anime:", err)
+      setError("Data anime tidak dapat dimuat. Coba lagi beberapa saat lagi.")
       setHasMore(false)
     } finally {
       setLoading(false)
@@ -107,8 +108,11 @@ export default function Home() {
           ))}
       </div>
 
-      {/* Empty State */}
-      {!loading && animeList.length === 0 && (
+      {/* Error and empty states */}
+      {error && (
+        <p className="text-center text-red-400 mt-10">{error}</p>
+      )}
+      {!error && !loading && animeList.length === 0 && (
         <p className="text-center text-gray-400 mt-10">
           Anime tidak ditemukan
         </p>

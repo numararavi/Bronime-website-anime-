@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
+import { fetchApi } from "../api"
 
 export default function AnimeDetail() {
   const { id } = useParams()
@@ -9,10 +10,23 @@ export default function AnimeDetail() {
   const [showTrailer, setShowTrailer] = useState(false)
 
   useEffect(() => {
-    fetch(`https://api.jikan.moe/v4/anime/${id}`)
-      .then(res => res.json())
-      .then(data => setAnime(data.data))
-      .finally(() => setLoading(false))
+    let active = true
+
+    fetchApi(`/anime/${id}`)
+      .then(data => {
+        if (active) setAnime(data.data)
+      })
+      .catch(error => {
+        console.error("Gagal fetch detail anime:", error)
+        if (active) setAnime(null)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [id])
 
   if (loading) return <p className="p-6">Loading...</p>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import AnimeCard from "../components/AnimeCard"
+import { fetchApi } from "../api"
 
 export default function Favorites() {
   const [animeList, setAnimeList] = useState([])
@@ -14,11 +15,11 @@ export default function Favorites() {
     // BATASI MAX 10 REQUEST SEKALIGUS (AMAN DARI 429)
     Promise.all(
       favIds.slice(0, 10).map(id =>
-        fetch(`https://api.jikan.moe/v4/anime/${id}`)
-          .then(res => res.json())
+        fetchApi(`/anime/${id}`)
           .then(data => data.data)
       )
     ).then(setAnimeList)
+      .catch(error => console.error("Gagal fetch favorites:", error))
   }, [])
 
   return (
